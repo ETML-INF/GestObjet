@@ -9,6 +9,7 @@
 
 import router from '@adonisjs/core/services/router'
 import SallesController from '#controllers/salles_controller'
+import ObjetsController from '#controllers/objets_Controller'
 
 router.get('/', async () => {
   return {
@@ -27,5 +28,14 @@ router
         router.delete('/:id', [SallesController, 'delete'])
       })
       .prefix('salle')
+    router
+      .group(() => {
+        router.get('/', [ObjetsController, 'getAll'])
+        router.get('/:id', [ObjetsController, 'getById'])
+        router.post('/', [ObjetsController, 'create'])
+        router.put('/:id', [ObjetsController, 'modify'])
+        router.delete('/:id', [ObjetsController, 'delete'])
+      })
+      .prefix('objet')
   })
   .prefix('api')
