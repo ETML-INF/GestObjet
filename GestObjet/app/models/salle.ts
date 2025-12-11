@@ -1,28 +1,27 @@
-import { DateTime } from 'luxon'
-import { BaseModel, column, manyToMany } from '@adonisjs/lucid/orm'
-import Object from '#models/objet'
-import type { ManyToMany } from '@adonisjs/lucid/types/relations'
+import mongoose, { Schema, Document } from 'mongoose'
 
-export default class Salle extends BaseModel {
-  @column({ isPrimary: true })
-  declare id: number
-
-  @column()
-  declare numero: string
-
-  @column()
-  declare batiment: string
-
-  @manyToMany(() => Object, {
-    pivotTable: 'contient',
-    pivotForeignKey: 'salle_id',
-    pivotRelatedForeignKey: 'objet_id',
-  })
-  declare objets: ManyToMany<typeof Object>
-
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime
+export interface ISalle extends Document {
+  numero: string
+  batiment: string
+  objets: mongoose.Types.ObjectId[]
 }
+
+const SalleSchema = new Schema(
+  {
+    numero: { type: String, required: true },
+    batiment: { type: String, required: true },
+
+    // Liste des objets dans la salle
+    objets: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Objet',
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+)
+
+export default mongoose.model<ISalle>('Salle', SalleSchema)

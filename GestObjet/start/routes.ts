@@ -9,13 +9,7 @@
 
 import router from '@adonisjs/core/services/router'
 import SallesController from '#controllers/salles_controller'
-import ObjetsController from '#controllers/objets_Controller'
-
-router.get('/', async () => {
-  return {
-    hello: 'world',
-  }
-})
+import ObjetsController from '#controllers/objets_controller'
 
 router
   .group(() => {

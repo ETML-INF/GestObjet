@@ -1,33 +1,33 @@
-import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo, manyToMany } from '@adonisjs/lucid/orm'
-import Type from '#models/type'
-import Salle from '#models/salle'
-import type { ManyToMany, BelongsTo } from '@adonisjs/lucid/types/relations'
+import mongoose, { Schema, Document } from 'mongoose'
 
-export default class Objet extends BaseModel {
-  @column({ isPrimary: true })
-  declare id: number
-
-  @column()
-  declare qrCode: string
-
-  // Clé étrangère pour le Type
-  @column()
-  declare typeId: number
-
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime
-
-  // Relation : Un objet appartient à un Type
-  @belongsTo(() => Type)
-  declare type: BelongsTo<typeof Type>
-
-  // Relation : Un objet est dans des salles (via la table pivot 'contient')
-  @manyToMany(() => Salle, {
-    pivotTable: 'contient',
-  })
-  declare salles: ManyToMany<typeof Salle>
+export interface IObjet extends Document {
+  qrCode: string
+  type: mongoose.Types.ObjectId // Référence vers le Type
+  salles: mongoose.Types.ObjectId[] // Relation Many-to-Many (voir point C)
 }
+
+const ObjetSchema = new Schema(
+  {
+    qrCode: { type: String, required: true, unique: true },
+
+    // Clé étrangère vers Type
+    type: {
+      type: Schema.Types.ObjectId,
+      ref: 'Type', // Doit matcher le nom du modèle 'Type'
+      required: true,
+    },
+
+    // Pour la relation ManyToMany avec Salle (on stocke un tableau d'IDs)
+    salles: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Salle',
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+)
+
+export default mongoose.model<IObjet>('Objet', ObjetSchema)

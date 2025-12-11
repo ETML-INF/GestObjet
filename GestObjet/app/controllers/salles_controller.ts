@@ -9,7 +9,7 @@ export default class SallesController {
    */
   async getAll({ response }: HttpContext) {
     try {
-      const salles: Salle[] = await Salle.all()
+      const salles = await Salle.find()
       return response.status(200).send(salles)
     } catch (err) {
       logger.error({ err: err }, 'Erreur de récuperation des salles')
@@ -20,7 +20,7 @@ export default class SallesController {
   async getById({ params, response }: HttpContext) {
     const id = decodeURIComponent(params.id)
     try {
-      const salle = await Salle.findBy('id', id)
+      const salle = await Salle.findById(id)
       if (!salle) {
         return response.status(404).send('salle pas trouvé')
       }
@@ -36,8 +36,17 @@ export default class SallesController {
   async getObjets({ params, response }: HttpContext) {
     const id = decodeURIComponent(params.id)
     try {
-      const salle = await Salle.query().where('id', id).preload('objets').firstOrFail()
-      return response.status(200).send(salle)
+      const salle = await Salle.findById(id).populate({
+        path: 'objets',
+        populate: {
+          path: 'type',
+          select: 'libelle',
+        },
+      })
+      if (!salle) {
+        return response.notFound({ message: 'Salle non trouvée' })
+      }
+      return response.status(200).send(salle.objets)
     } catch (err) {
       logger.error({ err: err }, `erreur lors de la récuperation de la salle dont l'id est ${id}`)
       return response
@@ -74,12 +83,10 @@ export default class SallesController {
       }
       const payload = await request.validateUsing(SalleValidator)
       console.log(payload)
-      const salle = await Salle.findByOrFail('id', id)
+      const salle = await Salle.findByIdAndUpdate(id, payload, { new: true })
       if (!salle) {
         return response.status(404).send("la salle n'a pas été trouvé")
       }
-      salle.merge(payload)
-      await salle.save()
 
       return response.status(200).send('la salle a bien été modifié')
     } catch (err) {
@@ -98,11 +105,10 @@ export default class SallesController {
         return response.status(404).send("l'id de la salle doit etre un nombre")
       }
 
-      const salle = await Salle.findByOrFail('id', id)
+      const salle = await Salle.findByIdAndDelete(id)
       if (!salle) {
         return response.status(404).send("la salle n'a pas été trouvé")
       }
-      await salle.delete()
 
       return response.status(200).send(`la salle ${id} a bien été supprimer !`)
     } catch (err) {

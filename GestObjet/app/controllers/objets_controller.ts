@@ -8,7 +8,7 @@ export default class ObjetsController {
    */
   async getAll({ response }: HttpContext) {
     try {
-      const objets: Objet[] = await Objet.all()
+      const objets = await Objet.find()
 
       return response.status(200).send(objets)
     } catch (err) {
