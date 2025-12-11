@@ -16,7 +16,21 @@ export default class SallesController {
     }
   }
 
-  async getById({ request }: HttpContext) {}
+  async getById({ params, response }: HttpContext) {
+    const id = decodeURIComponent(params.id)
+    try {
+      const salle = await Salle.findBy('id', id)
+      if (!salle) {
+        return response.status(404).send('salle pas trouvé')
+      }
+      return response.status(200).send(salle)
+    } catch (err) {
+      logger.error({ err: err }, `erreur lors de la récuperation de la salle dont l'id est ${id}`)
+      return response
+        .status(500)
+        .send(`erreur lors de la récuperation de la salle dont l'id est ${id}`)
+    }
+  }
   /**
    * Display form to create a new record
    */
