@@ -1,11 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
-
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class Salle {
-  final int id;
+  final String id;
   final String numero;
   final String batiment;
 
@@ -13,16 +10,16 @@ class Salle {
 
   factory Salle.fromJson(Map<String, dynamic> json) {
     return Salle(
-      id: json['id'] as int,
+      id: json['_id'] as String,
       numero: json['numero'] as String,
       batiment: json['batiment'] as String,
     );
   }
 }
 
-const baseUrl = "http://localhost:3333/api/salle";
+const baseUrl = "http://localhost:3333/api/";
 Future<List<Salle>> getAllSalle() async {
-  final response = await http.get(Uri.parse(baseUrl));
+  final response = await http.get(Uri.parse('$baseUrl/salle/'));
   if (response.statusCode == 200) {
     final jsonBody = jsonDecode(response.body);
     final List<dynamic> data = jsonBody['data'];
@@ -32,8 +29,8 @@ Future<List<Salle>> getAllSalle() async {
   }
 }
 
-Future<Salle> getSalleById(int id) async {
-  final response = await http.get(Uri.parse('$baseUrl/$id'));
+Future<Salle> getSalleById(String id) async {
+  final response = await http.get(Uri.parse('$baseUrl/salle/$id'));
   if (response.statusCode == 200) {
     final dynamic body = jsonDecode(response.body);
     return Salle.fromJson(body);
