@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 import Salle from '#models/salle'
+import { SalleValidator } from '#validators/salle'
 
 export default class SallesController {
   /**
@@ -34,7 +35,20 @@ export default class SallesController {
   /**
    * Display form to create a new record
    */
-  async create({}: HttpContext) {}
+  async create({ request, response }: HttpContext) {
+    try {
+      const payload = await request.validateUsing(SalleValidator)
+
+      await Salle.create({
+        numero: payload.numero,
+        batiment: payload.batiment,
+      })
+      return response.status(200).send('Salle créé avec succès !')
+    } catch (err) {
+      logger.error({ err: err }, 'erreur de création de salle')
+      return response.status(500).send('erreur de création de salle')
+    }
+  }
 
   /**
    * Edit individual record
