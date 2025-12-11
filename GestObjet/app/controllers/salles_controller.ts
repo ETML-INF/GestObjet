@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 import Salle from '#models/salle'
 import { SalleValidator } from '#validators/salle'
+import Objet from '#models/objet'
 
 export default class SallesController {
   /**
@@ -24,6 +25,19 @@ export default class SallesController {
       if (!salle) {
         return response.status(404).send('salle pas trouvé')
       }
+      return response.status(200).send(salle)
+    } catch (err) {
+      logger.error({ err: err }, `erreur lors de la récuperation de la salle dont l'id est ${id}`)
+      return response
+        .status(500)
+        .send(`erreur lors de la récuperation de la salle dont l'id est ${id}`)
+    }
+  }
+
+  async getObjets({ params, response }: HttpContext) {
+    const id = decodeURIComponent(params.id)
+    try {
+      const salle = await Salle.query().where('id', id).preload('objets').firstOrFail()
       return response.status(200).send(salle)
     } catch (err) {
       logger.error({ err: err }, `erreur lors de la récuperation de la salle dont l'id est ${id}`)

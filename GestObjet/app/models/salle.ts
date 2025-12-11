@@ -15,8 +15,10 @@ export default class Salle extends BaseModel {
 
   @manyToMany(() => Object, {
     pivotTable: 'contient',
+    pivotForeignKey: 'salle_id',
+    pivotRelatedForeignKey: 'objet_id',
   })
-  declare objects: ManyToMany<typeof Object>
+  declare objets: ManyToMany<typeof Object>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
