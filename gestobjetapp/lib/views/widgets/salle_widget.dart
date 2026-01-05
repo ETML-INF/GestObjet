@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gestobjetapp/services/salle_controller.dart';
+import 'package:gestobjetapp/views/pages/scanning_page.dart';
 
 class SalleWidget extends StatelessWidget {
   final Salle salle;
@@ -13,7 +14,11 @@ class SalleWidget extends StatelessWidget {
       borderRadius: BorderRadius.circular(24), // Bords très arrondis
       color: Colors.transparent, // Nécessaire pour voir le dégradé du Container
       child: InkWell(
-        onTap: () => print("touch salle ${salle.numero}"),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (context) => const ScanningPage())
+          );
+        },
         borderRadius: BorderRadius.circular(24),
         splashColor: Colors.white24, // Effet de clique plus subtil
         child: Ink(
