@@ -3,6 +3,7 @@ import type { CommandOptions } from '@adonisjs/core/types/ace'
 import Type from '#models/type'
 import Salle from '#models/salle'
 import Objet from '#models/objet'
+import mongoose from 'mongoose'
 
 export default class MongoSeed extends BaseCommand {
   static commandName = 'mongo:seed'
@@ -62,5 +63,7 @@ export default class MongoSeed extends BaseCommand {
     this.logger.success('✅ Salles créées')
 
     this.logger.info('🚀 Seeding terminé avec succès !')
+    //on termine la commande sans faire de ctrl+c pour stopper le procesus
+    await mongoose.disconnect()
   }
 }

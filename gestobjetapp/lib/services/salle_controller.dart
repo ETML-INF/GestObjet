@@ -1,18 +1,29 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:gestobjetapp/services/objet_controller.dart';
 
 class Salle {
   final String id;
   final String numero;
   final String batiment;
+  final List<Objet> objets;
 
-  const Salle({required this.id, required this.batiment, required this.numero});
+  const Salle({required this.id, required this.batiment, required this.numero, this.objets = const []});
 
   factory Salle.fromJson(Map<String, dynamic> json) {
     return Salle(
       id: json['_id'] as String,
       numero: json['numero'] as String,
       batiment: json['batiment'] as String,
+      objets: [],
+    );
+  }
+  Salle copyWith({List<Objet>? objets}) {
+    return Salle(
+      id: this.id,
+      numero: this.numero,
+      batiment: this.batiment,
+      objets: objets ?? this.objets,
     );
   }
 }
@@ -30,6 +41,10 @@ Future<List<Salle>> getAllSalle() async {
 
     throw Exception('failed to load Salles');
   }
+}
+
+Future<List<Objet>> getObjetsBySalleId(String salleId) async {
+  final response = await http.get(Uri.parse('$baseUrl'))
 }
 
 Future<Salle> getSalleById(String id) async {
