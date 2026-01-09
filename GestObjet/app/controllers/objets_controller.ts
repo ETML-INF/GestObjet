@@ -16,6 +16,7 @@ export default class ObjetsController {
       return response.status(500).send('Erreur serveur')
     }
   }
+  
 
   /**
    * Handle form submission for the create action
@@ -24,7 +25,21 @@ export default class ObjetsController {
   /**
    * Display form to create a new record
    */
-  async create({}: HttpContext) {}
+  async create({ request, response }: HttpContext) {
+    try {
+      const payload = request.body()
+
+      await Objet.create({
+        qrCode: payload.qrCode,
+        type: payload.type,
+        salles: payload.salles
+      })
+      return response.status(200).send('Objet créé avec succès !')
+    } catch (err) {
+      logger.error({ err: err }, "erreur de création d'objet")
+      return response.status(500).send("erreur de création d'objet")
+    }
+  }
 
   /**
    * Edit individual record

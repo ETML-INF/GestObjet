@@ -65,6 +65,7 @@ class _ObjetAddPageState extends State<ObjetAddPage> {
                 // Validation : Oblige l'utilisateur à choisir un type
                 validator: (value) => value == null ? "Veuillez choisir un type" : null,
               ),
+              const SizedBox(height: 20), // Espace entre le champ et le bouton
 
               TextFormField(
                 decoration: const InputDecoration(
