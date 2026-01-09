@@ -30,7 +30,14 @@ class _ObjetPageState extends State<ObjetPage> {
           return Center(child: Text('No objets found'));
         } else {
           final objets = snapshot.data!;
-          return ObjetFilterWidget(objets: objets);
+          return 
+          Scaffold(
+          
+            body: ObjetFilterWidget(objets: objets),
+            bottomNavigationBar: TextButton.icon(onPressed: () {}, label: Text("Verifier"),style: ButtonStyle(
+              foregroundColor: WidgetStateProperty.all<Color>(Colors.blue)
+            ),),
+          );
         }
       },
     );
