@@ -33,7 +33,9 @@ class _ObjetPageState extends State<ObjetPage> {
           final objets = snapshot.data!;
           return 
           Scaffold(
-          
+            appBar: AppBar(
+              title: Text("Objets de la salle ${widget.SalleId}"),
+            ),
             body: Column( 
               children: [
                 Expanded(
