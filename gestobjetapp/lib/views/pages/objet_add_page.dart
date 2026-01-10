@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gestobjetapp/services/type_controller.dart';
+import 'package:gestobjetapp/services/objet_controller.dart';
 
 class ObjetAddPage extends StatefulWidget {
-  const ObjetAddPage({super.key});
+  final String SalleId;
+
+  const ObjetAddPage({super.key, required this.SalleId});
 
   @override
   State<ObjetAddPage> createState() => _ObjetAddPageState();
@@ -11,7 +14,8 @@ class ObjetAddPage extends StatefulWidget {
 class _ObjetAddPageState extends State<ObjetAddPage> {
   final _formKey = GlobalKey<FormState>();
   late Future<List<Type>> futureType;
-  List<String> listLibelles = [];
+  Map<String, String> listLibelles = {};
+  String? _qrCode;
   String? selectedType;
   @override
   void initState() {
@@ -20,19 +24,16 @@ class _ObjetAddPageState extends State<ObjetAddPage> {
     futureType.then((list) {
       if (mounted) {
         setState(() {
-          listLibelles = list
-            .map((obj) => obj.libelle).toList();
+          listLibelles = {for (var obj in list) obj.libelle: obj.id};
         });
       }
     });
-
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Ajouter un objet"),
-      ),
+      appBar: AppBar(title: const Text("Ajouter un objet")),
       // On ajoute un Padding pour que le formulaire ne colle pas aux bords
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -40,30 +41,33 @@ class _ObjetAddPageState extends State<ObjetAddPage> {
           key: _formKey,
           child: Column(
             children: [
-              DropdownButtonFormField<String>(decoration: const InputDecoration(
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
                   labelText: "Type d'objet",
                   border: OutlineInputBorder(),
                 ),
-                value: selectedType, // La valeur actuelle sélectionnée
+                value:
+                    selectedType, // La valeur actuelle sélectionnée (ID du type)
                 hint: const Text("Sélectionnez un type"),
-                
-                // On transforme la List<String> en List<DropdownMenuItem>
-                items: listLibelles.map((String value) {
+
+                // On transforme la Map<String, String> en List<DropdownMenuItem>
+                items: listLibelles.keys.map((String label) {
                   return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
+                    value: listLibelles[label],
+                    child: Text(label),
                   );
                 }).toList(),
-                
+
                 // La logique quand on sélectionne un élément
                 onChanged: (String? newValue) {
                   setState(() {
                     selectedType = newValue;
                   });
                 },
-                
+
                 // Validation : Oblige l'utilisateur à choisir un type
-                validator: (value) => value == null ? "Veuillez choisir un type" : null,
+                validator: (value) =>
+                    value == null ? "Veuillez choisir un type" : null,
               ),
               const SizedBox(height: 20), // Espace entre le champ et le bouton
 
@@ -78,19 +82,38 @@ class _ObjetAddPageState extends State<ObjetAddPage> {
                   }
                   return null;
                 },
+                onChanged: (String? value) {
+                  setState(() {
+                    _qrCode = value;
+                  });
+                },
               ),
               const SizedBox(height: 20), // Espace entre le champ et le bouton
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Envoi des données...")),
+                      const SnackBar(content: Text("Création de l'objet")),
                     );
-                    // Ici, vous mettrez plus tard votre appel API pour créer l'objet
+                    // Appel API : utiliser les valeurs non-null après validation
+                    final res = await postObjet(
+                      _qrCode!,
+                      selectedType!,
+                      widget.SalleId,
+                    );
+                    if (res.statusCode == 200) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Objet créer avec succès !"),
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    }
+                    // Ici, vous mettrez plus tard votre gestion de la réponse
                   }
                 },
                 child: const Text("Ajouter"),
-              )
+              ),
             ],
           ),
         ),

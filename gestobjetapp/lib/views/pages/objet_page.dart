@@ -18,6 +18,7 @@ class _ObjetPageState extends State<ObjetPage> {
     super.initState();
     futureObjets = getObjetBySalle(widget.SalleId);
   }
+
   Widget build(BuildContext context) {
     return FutureBuilder<List<Objet>>(
       future: futureObjets,
@@ -31,32 +32,32 @@ class _ObjetPageState extends State<ObjetPage> {
           return Center(child: Text('No objets found'));
         } else {
           final objets = snapshot.data!;
-          return 
-          Scaffold(
-            appBar: AppBar(
-              title: Text("Objets de la salle"),
-            ),
-            body: Column( 
+          return Scaffold(
+            appBar: AppBar(title: Text("Objets de la salle")),
+            body: Column(
               children: [
-                Expanded(
-                  child: ObjetFilterWidget(objets: objets), 
-                ),
+                Expanded(child: ObjetFilterWidget(objets: objets)),
 
                 TextButton.icon(
                   onPressed: () {},
                   label: Text("Verifier"),
                   style: ButtonStyle(
-                    foregroundColor: WidgetStateProperty.all<Color>(Colors.blue),
+                    foregroundColor: WidgetStateProperty.all<Color>(
+                      Colors.blue,
+                    ),
                   ),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (context) => ObjetAddPage())
+                      MaterialPageRoute<void>(
+                        builder: (context) =>
+                            ObjetAddPage(SalleId: widget.SalleId),
+                      ),
                     );
-                  }, 
+                  },
                   child: Icon(Icons.add),
-                )   
+                ),
               ],
             ),
           );

@@ -38,14 +38,33 @@ Future<List<Objet>> getObjetBySalle(String id) async {
   if (response.statusCode == 200) {
     final dynamic jsonBody = jsonDecode(response.body);
     if (jsonBody is List) {
-        return jsonBody.map((json) => Objet.fromJson(json)).toList();
-      } else if (jsonBody is Map && jsonBody.containsKey('data')) {
-        // Au cas où le backend changerait pour renvoyer { data: [...] }
-        return (jsonBody['data'] as List).map((json) => Objet.fromJson(json)).toList();
-      } else {
-        throw Exception("Format JSON inattendu : Ce n'est pas une liste.");
-      }
+      return jsonBody.map((json) => Objet.fromJson(json)).toList();
+    } else if (jsonBody is Map && jsonBody.containsKey('data')) {
+      // Au cas où le backend changerait pour renvoyer { data: [...] }
+      return (jsonBody['data'] as List)
+          .map((json) => Objet.fromJson(json))
+          .toList();
+    } else {
+      throw Exception("Format JSON inattendu : Ce n'est pas une liste.");
+    }
   } else {
     throw Exception('failed to load classes');
+  }
+}
+
+Future<http.Response> postObjet(
+  String qrCode,
+  String typeId,
+  String salleId,
+) async {
+  final response = await http.post(
+    Uri.parse('$baseUrl/objet/'),
+    body: {'qrCode': qrCode, 'type': typeId, 'salles': salleId},
+  );
+  print("la réponse: ${response.body.toString()}");
+  if (response.statusCode == 200) {
+    return response;
+  } else {
+    return throw Exception('failed to create object');
   }
 }

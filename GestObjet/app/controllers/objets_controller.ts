@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 import Objet from '#models/objet'
+import Salle from '#models/salle'
 
 export default class ObjetsController {
   /**
@@ -16,7 +17,6 @@ export default class ObjetsController {
       return response.status(500).send('Erreur serveur')
     }
   }
-  
 
   /**
    * Handle form submission for the create action
@@ -25,19 +25,37 @@ export default class ObjetsController {
   /**
    * Display form to create a new record
    */
+
   async create({ request, response }: HttpContext) {
     try {
       const payload = request.body()
 
-      await Objet.create({
+      // 1. Création de l'objet (Mongoose renvoie l'instance créée)
+      const newObjet = await Objet.create({
         qrCode: payload.qrCode,
         type: payload.type,
-        salles: payload.salles
+        salles: payload.salles || [], // On s'assure que c'est un tableau
       })
-      return response.status(200).send('Objet créé avec succès !')
+      console.log('IDs reçus du payload:', payload.salles)
+      console.log('ID du nouvel objet:', newObjet._id)
+      // 2. Si des salles sont liées, on met à jour le côté "Salle"
+      if (payload.salles && payload.salles.length > 0) {
+        // On cherche toutes les salles dont l'ID est dans la liste payload.salles
+        // Et on PUSH l'ID du nouvel objet dans leur tableau 'objets'
+        await Salle.updateMany(
+          { _id: { $in: payload.salles } },
+          { $push: { objets: newObjet._id } }
+        )
+      }
+
+      return response.status(200).json({
+        message: 'Objet créé avec succès et lié aux salles !',
+        data: newObjet,
+      })
     } catch (err) {
-      logger.error({ err: err }, "erreur de création d'objet")
-      return response.status(500).send("erreur de création d'objet")
+      // logger.error({ err: err }, "erreur de création d'objet")
+      console.error(err) // Pour le debug rapide
+      return response.status(500).send("Erreur de création d'objet")
     }
   }
 
