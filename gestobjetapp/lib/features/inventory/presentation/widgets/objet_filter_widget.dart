@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gestobjetapp/features/inventory/data/repositories/objet_controller.dart';
+import 'package:gestobjetapp/features/inventory/data/models/objet_model.dart';
 
 class ObjetFilterWidget extends StatelessWidget {
   final List<Objet> objets;

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:gestobjetapp/features/inventory/data/repositories/objet_controller.dart';
+import 'package:gestobjetapp/features/inventory/presentation/notifiers/inventory_notifier.dart';
+import 'package:gestobjetapp/features/inventory/data/models/objet_model.dart';
 import 'package:gestobjetapp/features/inventory/presentation/widgets/objet_filter_widget.dart';
 import 'package:gestobjetapp/features/inventory/presentation/pages/objet_add_page.dart';
 
@@ -13,13 +16,18 @@ class ObjetPage extends StatefulWidget {
 
 class _ObjetPageState extends State<ObjetPage> {
   late Future<List<Objet>> futureObjets;
+
   @override
   void initState() {
     super.initState();
-    futureObjets = getObjetBySalle(widget.SalleId);
+    futureObjets = context.read<InventoryNotifier>().getObjetBySalle(
+      widget.SalleId,
+    );
   }
 
   Widget build(BuildContext context) {
+    final inventoryNotifier = context.watch<InventoryNotifier>();
+
     return FutureBuilder<List<Objet>>(
       future: futureObjets,
       builder: (context, snapshot) {

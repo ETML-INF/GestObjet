@@ -1,70 +1,37 @@
-import 'package:gestobjetapp/features/inventory/data/repositories/type_controller.dart';
+import 'package:gestobjetapp/core/services/api_client.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
-class Objet {
-  final String id;
-  final String qrCode;
-  // On stocke l'objet complet TypeObjet, pas juste l'ID
-  final Type? type;
-  final DateTime? createdAt;
-
-  Objet({required this.id, required this.qrCode, this.type, this.createdAt});
-
-  factory Objet.fromJson(Map<String, dynamic> json) {
-    return Objet(
-      // Mongoose renvoie '_id', on le map vers 'id'
-      id: json['_id'] as String,
-
-      qrCode: json['qrCode'] as String,
-
-      // Gestion intelligente du Type :
-      // On vérifie si 'type' est présent et n'est pas null
-      type: json['type'] != null && json['type'] is Map<String, dynamic>
-          ? Type.fromJson(json['type'])
-          : null, // Si le backend n'a pas envoyé le type ou juste un ID string
-      // Bonus : Gestion de la date
-      createdAt: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt'])
-          : null,
-    );
-  }
-}
+import 'package:gestobjetapp/features/inventory/data/models/objet_model.dart';
 
 const baseUrl = "http://localhost:3333/api";
 
-Future<List<Objet>> getObjetBySalle(String id) async {
-  final response = await http.get(Uri.parse('$baseUrl/salle/$id/objets'));
-  if (response.statusCode == 200) {
-    final dynamic jsonBody = jsonDecode(response.body);
-    if (jsonBody is List) {
-      return jsonBody.map((json) => Objet.fromJson(json)).toList();
-    } else if (jsonBody is Map && jsonBody.containsKey('data')) {
-      // Au cas où le backend changerait pour renvoyer { data: [...] }
-      return (jsonBody['data'] as List)
-          .map((json) => Objet.fromJson(json))
-          .toList();
-    } else {
-      throw Exception("Format JSON inattendu : Ce n'est pas une liste.");
-    }
-  } else {
-    throw Exception('failed to load classes');
-  }
-}
+class ObjetRepository {
+  final ApiClient _apiClient;
 
-Future<http.Response> postObjet(
-  String qrCode,
-  String typeId,
-  String salleId,
-) async {
-  final response = await http.post(
-    Uri.parse('$baseUrl/objet/'),
-    body: {'qrCode': qrCode, 'type': typeId, 'salles': salleId},
-  );
-  print("la réponse: ${response.body.toString()}");
-  if (response.statusCode == 200) {
-    return response;
-  } else {
-    return throw Exception('failed to create object');
+  ObjetRepository(this._apiClient);
+
+  Future<List<Objet>> getObjetBySalle(String id) async {
+    final response = await _apiClient.get('/salle/$id/objets');
+    final dynamic jsonBody = jsonDecode(response.body);
+
+    return (jsonBody as List)
+        .map((data) => Objet.fromJson(data as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<http.Response> postObjet(
+    String qrCode,
+    String typeId,
+    String salleId,
+  ) async {
+    final response = await _apiClient.post(
+      '/objet/',
+      body: {'qrCode': qrCode, 'type': typeId, 'salles': salleId},
+    );
+    if (response.statusCode == 200) {
+      return response;
+    } else {
+      throw Exception('failed to create object');
+    }
   }
 }

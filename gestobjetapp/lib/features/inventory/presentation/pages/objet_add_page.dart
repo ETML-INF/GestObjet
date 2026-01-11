@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:gestobjetapp/features/inventory/data/repositories/type_controller.dart';
 import 'package:gestobjetapp/features/inventory/data/repositories/objet_controller.dart';
+import 'package:gestobjetapp/features/inventory/data/models/objet_model.dart';
+import 'package:gestobjetapp/features/inventory/presentation/notifiers/inventory_notifier.dart';
 
 class ObjetAddPage extends StatefulWidget {
   final String SalleId;
@@ -20,7 +23,7 @@ class _ObjetAddPageState extends State<ObjetAddPage> {
   @override
   void initState() {
     super.initState();
-    futureType = getAllType();
+    futureType = getAllType(); // TODO: a changer par nouvel api call
     futureType.then((list) {
       if (mounted) {
         setState(() {
@@ -32,6 +35,7 @@ class _ObjetAddPageState extends State<ObjetAddPage> {
 
   @override
   Widget build(BuildContext context) {
+    final inventoryNotifier = context.watch<InventoryNotifier>();
     return Scaffold(
       appBar: AppBar(title: const Text("Ajouter un objet")),
       // On ajoute un Padding pour que le formulaire ne colle pas aux bords
@@ -95,24 +99,31 @@ class _ObjetAddPageState extends State<ObjetAddPage> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Création de l'objet")),
                     );
-                    // Appel API : utiliser les valeurs non-null après validation
-                    final res = await postObjet(
-                      _qrCode!,
-                      selectedType!,
-                      widget.SalleId,
-                    );
-                    if (res.statusCode == 200) {
+                    final success = await context
+                        .read<InventoryNotifier>()
+                        .createObjet(_qrCode!, selectedType!, widget.SalleId);
+                    if (success && mounted) {
+                      Navigator.pop(context);
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text("Objet créer avec succès !"),
                         ),
                       );
-                      Navigator.of(context).pop();
+                    } else if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            inventoryNotifier.errorMessage ?? "Erreur",
+                          ),
+                        ),
+                      );
                     }
-                    // Ici, vous mettrez plus tard votre gestion de la réponse
                   }
                 },
-                child: const Text("Ajouter"),
+                child: inventoryNotifier.isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text("Ajouter"),
               ),
             ],
           ),
