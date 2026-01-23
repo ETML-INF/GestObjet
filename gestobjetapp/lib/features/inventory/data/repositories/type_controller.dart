@@ -1,5 +1,3 @@
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:gestobjetapp/features/inventory/data/models/type_model.dart';
 import 'package:gestobjetapp/core/services/api_client.dart';
 
@@ -15,6 +13,14 @@ class TypeRepository {
     return (response as List)
         .map((data) => Type.fromJson(data as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<Type> createType(String type) async {
+    final response = await _apiClient.post('/type/',
+      body: {'libelle': type}
+    );
+    print(response);
+    return Type.fromJson(response['type'] as Map<String, dynamic>);
   }
 
 }
